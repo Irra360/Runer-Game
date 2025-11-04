@@ -1,0 +1,117 @@
+[gd_scene load_steps=6 format=3 uid="uid://dwjy2xon1tai4"]
+
+[ext_resource type="Script" uid="uid://bvo07d7xld0te" path="res://Menus/Creditos/creditosl.gd" id="1_16i3i"]
+[ext_resource type="Texture2D" uid="uid://d4d15wkdt84d4" path="res://Menus/Inicio/Menu_Principal_3.png" id="1_50euu"]
+[ext_resource type="Texture2D" uid="uid://cdsoocjujebmj" path="res://Menus/Inicio/Botones/Salir_Menu.png" id="3_fxg3p"]
+[ext_resource type="Texture2D" uid="uid://d3io4ysq557qg" path="res://Menus/Inicio/Botones/Salir_Menu_Oscuro.png" id="4_pnqw2"]
+[ext_resource type="Script" uid="uid://bpclohxqjuejt" path="res://Esenas/Suelo/fps.gd" id="5_fxg3p"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_16i3i")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = -36.0
+offset_top = -53.0
+offset_right = 108.0
+offset_bottom = 32.0
+scale = Vector2(16, 16)
+texture = ExtResource("1_50euu")
+
+[node name="Node2D" type="Node2D" parent="."]
+position = Vector2(533, 1800)
+scale = Vector2(6, 6)
+
+[node name="Desarrolladora" type="VBoxContainer" parent="Node2D"]
+offset_left = -88.0
+offset_top = -8.0
+offset_right = 121.0
+offset_bottom = 535.0
+scale = Vector2(2, 2)
+pivot_offset = Vector2(7.005, 0)
+
+[node name="Desarrolladora" type="Label" parent="Node2D/Desarrolladora"]
+layout_mode = 2
+text = "         Desarrollado por 
+        TEAM SALCHICHA
+
+      Miembros del equipo
+
+
+
+
+
+
+
+
+
+
+
+
+
+                Testers
+Israel Amador      Aleyuan 
+Yadrian                    Febles
+Yarobis                      "
+
+[node name="Personal" type="VBoxContainer" parent="Node2D"]
+offset_left = -89.0
+offset_top = 114.0
+offset_right = 290.0
+offset_bottom = 605.0
+scale = Vector2(1.4, 1.4)
+
+[node name="Personal" type="Label" parent="Node2D/Personal"]
+layout_mode = 2
+text = "
+
+
+      Director               Guinista
+Israel Amador       Aleyuan Febles
+                                  Israel Amador 
+
+  Programadores        Jefe de arte
+  Israel Amador          Israel Amador
+     Markiel
+
+Banda zonora            Desarrollo      
+ #########               de niveles 
+                                   Israel Amador
+                
+      Herramientas
+         Godot 4.3
+        Pixelorama
+         Photoshop
+             Copilot"
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(1116, 622)
+zoom = Vector2(0.5, 0.48)
+
+[node name="Salir" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 1840.0
+offset_top = 2.0
+offset_right = 2671.0
+offset_bottom = 237.0
+scale = Vector2(0.5, 0.5)
+
+[node name="TextureButton" type="TextureButton" parent="Salir"]
+layout_mode = 2
+texture_normal = ExtResource("3_fxg3p")
+texture_hover = ExtResource("4_pnqw2")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="FPS" type="Label" parent="CanvasLayer"]
+offset_left = 19.0
+offset_top = 22.0
+offset_right = 117.0
+offset_bottom = 65.0
+script = ExtResource("5_fxg3p")
+
+[connection signal="pressed" from="Salir/TextureButton" to="." method="_on_texture_button_pressed"]

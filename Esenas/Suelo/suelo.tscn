@@ -1,0 +1,51 @@
+[gd_scene load_steps=9 format=3 uid="uid://758ns2srly8"]
+
+[ext_resource type="Texture2D" uid="uid://bff6gveu2nw7v" path="res://Fondos/Cesped/Suelo_set.png" id="1_nen3v"]
+[ext_resource type="Script" uid="uid://h8mi6awaqawb" path="res://Esenas/Suelo.gd" id="2_e8rh4"]
+[ext_resource type="PackedScene" uid="uid://bwj0rcq4oiod7" path="res://Esenas/Jugador/Jugador.tscn" id="2_tii18"]
+[ext_resource type="Script" uid="uid://d1nbrshecivwo" path="res://Esenas/Suelo/Cam_Jugador.gd" id="4_nen3v"]
+[ext_resource type="Script" uid="uid://bpclohxqjuejt" path="res://Esenas/Suelo/fps.gd" id="5_e8rh4"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_sw1di"]
+texture = ExtResource("1_nen3v")
+0:0/0 = 0
+1:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_rlcxy"]
+sources/1 = SubResource("TileSetAtlasSource_sw1di")
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_nen3v"]
+
+[node name="StaticBody2D" type="StaticBody2D"]
+position = Vector2(-2, -4)
+scale = Vector2(0.5, 0.5)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="FPS" type="Label" parent="CanvasLayer"]
+offset_left = 19.0
+offset_top = 22.0
+offset_right = 117.0
+offset_bottom = 65.0
+script = ExtResource("5_e8rh4")
+
+[node name="Mapa" type="Node2D" parent="."]
+
+[node name="TileMap" type="TileMap" parent="Mapa"]
+position = Vector2(36, -1366)
+scale = Vector2(6, 6)
+tile_set = SubResource("TileSet_rlcxy")
+format = 2
+script = ExtResource("2_e8rh4")
+
+[node name="Colision_mapa" type="StaticBody2D" parent="Mapa/TileMap"]
+physics_material_override = SubResource("PhysicsMaterial_nen3v")
+
+[node name="player" parent="." instance=ExtResource("2_tii18")]
+position = Vector2(171, 419)
+
+[node name="Camera2D" type="Camera2D" parent="player"]
+position = Vector2(0.834839, 0)
+script = ExtResource("4_nen3v")

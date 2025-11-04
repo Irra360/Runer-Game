@@ -1,0 +1,94 @@
+[gd_scene load_steps=12 format=3 uid="uid://6ef52rgcexmn"]
+
+[ext_resource type="Texture2D" uid="uid://cagxdonbacck8" path="res://Menus/Inicio/Menu_Principal_1.png" id="1_mswcn"]
+[ext_resource type="Script" uid="uid://2vqyv3iqekkm" path="res://Esenas/Menus/menu_principal.gd" id="1_o8lfq"]
+[ext_resource type="Texture2D" uid="uid://bk64ngnnw310m" path="res://Menus/Inicio/Botones/Jugar_Menu.png" id="3_mlqvo"]
+[ext_resource type="Texture2D" uid="uid://ba8b61d60h3l3" path="res://Menus/Inicio/Botones/Opciones_Menu.png" id="4_43ndd"]
+[ext_resource type="Texture2D" uid="uid://n4dhssm654gs" path="res://Menus/Inicio/Botones/Jugar_Menu_Oscuro.png" id="4_s5ard"]
+[ext_resource type="Texture2D" uid="uid://d3j1bpevpbokg" path="res://Menus/Inicio/Botones/Creditos_Menu.png" id="5_s5ard"]
+[ext_resource type="Texture2D" uid="uid://cdsoocjujebmj" path="res://Menus/Inicio/Botones/Salir_Menu.png" id="6_o8lfq"]
+[ext_resource type="Texture2D" uid="uid://b7h1dariit778" path="res://Menus/Inicio/Botones/Opciones_Menu_Oscuro.png" id="6_ub6ys"]
+[ext_resource type="Texture2D" uid="uid://dq2psqqy16542" path="res://Menus/Inicio/Botones/Creditos_Menu_Oscuro.png" id="8_an085"]
+[ext_resource type="Texture2D" uid="uid://d3io4ysq557qg" path="res://Menus/Inicio/Botones/Salir_Menu_Oscuro.png" id="10_slodt"]
+[ext_resource type="Script" uid="uid://bpclohxqjuejt" path="res://Esenas/Suelo/fps.gd" id="11_o8lfq"]
+
+[node name="Menu Principal" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 632.0
+offset_bottom = 326.0
+scale = Vector2(0.468667, 0.499987)
+script = ExtResource("1_o8lfq")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 2458.0
+offset_bottom = 1296.0
+texture = ExtResource("1_mswcn")
+
+[node name="Jugar" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 850.0
+offset_top = 190.0
+offset_right = 1685.0
+offset_bottom = 432.0
+
+[node name="Jugar" type="TextureButton" parent="Jugar"]
+layout_mode = 2
+texture_normal = ExtResource("3_mlqvo")
+texture_hover = ExtResource("4_s5ard")
+
+[node name="Opciones" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 945.0
+offset_top = 480.0
+offset_right = 1779.0
+offset_bottom = 722.0
+scale = Vector2(0.8, 0.8)
+
+[node name="Opciones" type="TextureButton" parent="Opciones"]
+layout_mode = 2
+texture_normal = ExtResource("4_43ndd")
+texture_hover = ExtResource("6_ub6ys")
+
+[node name="Creditos" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 945.0
+offset_top = 710.0
+offset_right = 1779.0
+offset_bottom = 950.0
+scale = Vector2(0.8, 0.8)
+
+[node name="TextureButton" type="TextureButton" parent="Creditos"]
+layout_mode = 2
+texture_normal = ExtResource("5_s5ard")
+texture_hover = ExtResource("8_an085")
+
+[node name="Salir" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 985.0
+offset_top = 1100.0
+offset_right = 1816.0
+offset_bottom = 1335.0
+scale = Vector2(0.7, 0.7)
+
+[node name="TextureButton" type="TextureButton" parent="Salir"]
+layout_mode = 2
+texture_normal = ExtResource("6_o8lfq")
+texture_hover = ExtResource("10_slodt")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(1229.02, 648.017)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="FPS" type="Label" parent="CanvasLayer"]
+offset_left = 19.0
+offset_top = 22.0
+offset_right = 117.0
+offset_bottom = 65.0
+script = ExtResource("11_o8lfq")
+
+[connection signal="pressed" from="Jugar/Jugar" to="." method="_on_jugar_pressed"]
+[connection signal="pressed" from="Creditos/TextureButton" to="." method="_on_Creditos_button_pressed"]
+[connection signal="pressed" from="Salir/TextureButton" to="." method="_on_texture_button_pressed"]

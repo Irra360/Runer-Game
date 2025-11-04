@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://v6hc0b51p061"]
+
+[ext_resource type="Script" uid="uid://bqp2ycxq3x1qt" path="res://Audio.gd" id="1_w75ge"]
+
+[node name="HSlider" type="HSlider"]
+offset_left = 11.0
+offset_top = 2.0
+offset_right = 285.0
+offset_bottom = 97.0
+max_value = 20.0
+script = ExtResource("1_w75ge")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
