@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://bvo07d7xld0te" path="res://Menus/Creditos/creditosl.gd" id="1_16i3i"]
 [ext_resource type="Texture2D" uid="uid://d4d15wkdt84d4" path="res://Menus/Inicio/Menu_Principal_3.png" id="1_50euu"]
-[ext_resource type="Texture2D" uid="uid://cdsoocjujebmj" path="res://Menus/Inicio/Botones/Salir_Menu.png" id="3_fxg3p"]
-[ext_resource type="Texture2D" uid="uid://d3io4ysq557qg" path="res://Menus/Inicio/Botones/Salir_Menu_Oscuro.png" id="4_pnqw2"]
+[ext_resource type="Texture2D" uid="uid://bvhi5p2omshxl" path="res://Menus/Botones/X.png" id="3_fxg3p"]
+[ext_resource type="Texture2D" uid="uid://bdvraq3bb4t71" path="res://Menus/Botones/X_blak.png" id="4_pnqw2"]
 [ext_resource type="Script" uid="uid://bpclohxqjuejt" path="res://Esenas/Suelo/fps.gd" id="5_fxg3p"]
 
 [node name="Control" type="Control"]
@@ -94,11 +94,11 @@ zoom = Vector2(0.5, 0.48)
 
 [node name="Salir" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 1840.0
-offset_top = 2.0
-offset_right = 2671.0
-offset_bottom = 237.0
-scale = Vector2(0.5, 0.5)
+offset_left = 2038.0
+offset_top = -34.0
+offset_right = 2869.0
+offset_bottom = 201.0
+scale = Vector2(5.605, 5.605)
 
 [node name="TextureButton" type="TextureButton" parent="Salir"]
 layout_mode = 2
