@@ -13,3 +13,8 @@ func _on_texture_button_pressed() -> void:  #Salir del Juego
 func _on_Creditos_button_pressed() -> void:         #Creditos
 	pass 
 	var error = get_tree().change_scene_to_file("res://Menus/Creditos/Creditosl.tscn")
+
+
+func opciones_on_opciones_pressed() -> void:
+	pass 
+	var error = get_tree().change_scene_to_file("res://Esenas/Menus/Opciones.tscn")

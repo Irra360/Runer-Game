@@ -1,0 +1,105 @@
+[gd_scene load_steps=10 format=3 uid="uid://bwnunphxi3832"]
+
+[ext_resource type="Script" uid="uid://ce2jnp7f1866l" path="res://Esenas/Menus/opciones.gd" id="1_kjcx1"]
+[ext_resource type="Texture2D" uid="uid://btf51ut5xqmm6" path="res://Menus/Inicio/Menu_Principal_2.png" id="1_u1i6r"]
+[ext_resource type="Texture2D" uid="uid://dkxf30eyqf5rs" path="res://Menus/Opciones/audio.png" id="2_6rv11"]
+[ext_resource type="Texture2D" uid="uid://bc8g03lxhcj0o" path="res://Menus/Opciones/resolucion.png" id="3_frdiu"]
+[ext_resource type="Texture2D" uid="uid://71yxo3y1mpk6" path="res://Menus/Opciones/pantalla.png" id="4_do118"]
+[ext_resource type="Texture2D" uid="uid://lgd1u1hwtsad" path="res://Menus/Opciones/brillo.png" id="5_3flwv"]
+[ext_resource type="Texture2D" uid="uid://bvhi5p2omshxl" path="res://Menus/Botones/X.png" id="6_dybih"]
+[ext_resource type="Texture2D" uid="uid://ccw8nb4adqc8i" path="res://Menus/Opciones/controles.png" id="6_frdiu"]
+[ext_resource type="Texture2D" uid="uid://bdvraq3bb4t71" path="res://Menus/Botones/X_blak.png" id="7_v65jg"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_kjcx1")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(7, 7)
+texture = ExtResource("1_u1i6r")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 98.0
+offset_top = 100.0
+offset_right = 925.0
+offset_bottom = 340.0
+scale = Vector2(0.335, 0.34)
+
+[node name="Audio" type="TextureButton" parent="VBoxContainer"]
+layout_mode = 2
+texture_normal = ExtResource("2_6rv11")
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 480.0
+offset_top = 102.0
+offset_right = 1306.0
+offset_bottom = 332.0
+scale = Vector2(0.345, 0.345)
+
+[node name="Resolucion" type="TextureButton" parent="VBoxContainer2"]
+layout_mode = 2
+texture_normal = ExtResource("3_frdiu")
+
+[node name="VBoxContainer3" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 98.0
+offset_top = 208.0
+offset_right = 923.0
+offset_bottom = 444.0
+scale = Vector2(0.335, 0.35)
+
+[node name="Pantalla_ventana" type="TextureButton" parent="VBoxContainer3"]
+layout_mode = 2
+texture_normal = ExtResource("4_do118")
+
+[node name="VBoxContainer4" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 485.0
+offset_top = 208.0
+offset_right = 1310.0
+offset_bottom = 445.0
+scale = Vector2(0.34, 0.335)
+
+[node name="Brillo y Contraste" type="TextureButton" parent="VBoxContainer4"]
+layout_mode = 2
+texture_normal = ExtResource("5_3flwv")
+
+[node name="VBoxContainer5" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 293.0
+offset_top = 327.0
+offset_right = 1149.0
+offset_bottom = 558.0
+scale = Vector2(0.335, 0.335)
+
+[node name="Controles" type="TextureButton" parent="VBoxContainer5"]
+layout_mode = 2
+texture_normal = ExtResource("6_frdiu")
+
+[node name="Salir" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 803.0
+offset_top = 20.0
+offset_right = 831.0
+offset_bottom = 49.0
+scale = Vector2(2.21, 2.21)
+
+[node name="TextureButton" type="TextureButton" parent="Salir"]
+layout_mode = 2
+texture_normal = ExtResource("6_dybih")
+texture_hover = ExtResource("7_v65jg")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(450, 227)
+scale = Vector2(0.87086, 0.839555)
+zoom = Vector2(1.235, 1.235)
+
+[connection signal="pressed" from="Salir/TextureButton" to="." method="_on_exit_pressed"]

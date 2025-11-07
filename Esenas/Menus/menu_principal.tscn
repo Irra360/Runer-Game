@@ -90,5 +90,6 @@ offset_bottom = 65.0
 script = ExtResource("11_o8lfq")
 
 [connection signal="pressed" from="Jugar/Jugar" to="." method="_on_jugar_pressed"]
+[connection signal="pressed" from="Opciones/Opciones" to="." method="opciones_on_opciones_pressed"]
 [connection signal="pressed" from="Creditos/TextureButton" to="." method="_on_Creditos_button_pressed"]
 [connection signal="pressed" from="Salir/TextureButton" to="." method="_on_texture_button_pressed"]

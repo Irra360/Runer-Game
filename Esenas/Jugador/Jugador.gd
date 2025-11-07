@@ -72,8 +72,12 @@ func manejar_pulsacion(dir: int) -> void:
 
 
 func actualizar_animaciones() -> void:
+	# Animación de salto
 	if not is_on_floor():
 		anim.play("jump")
+		# 👇 Flip horizontal también en el aire
+		if velocity.x != 0:
+			anim.flip_h = velocity.x < 0
 		return
 
 	if velocity.x != 0:
