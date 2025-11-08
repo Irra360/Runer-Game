@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://758ns2srly8"]
+[gd_scene load_steps=10 format=3 uid="uid://758ns2srly8"]
 
 [ext_resource type="Texture2D" uid="uid://bff6gveu2nw7v" path="res://Fondos/Cesped/Suelo_set.png" id="1_nen3v"]
 [ext_resource type="Script" uid="uid://h8mi6awaqawb" path="res://Esenas/Suelo.gd" id="2_e8rh4"]
 [ext_resource type="PackedScene" uid="uid://bwj0rcq4oiod7" path="res://Esenas/Jugador/Jugador.tscn" id="2_tii18"]
 [ext_resource type="Script" uid="uid://d1nbrshecivwo" path="res://Esenas/Suelo/Cam_Jugador.gd" id="4_nen3v"]
 [ext_resource type="Script" uid="uid://bpclohxqjuejt" path="res://Esenas/Suelo/fps.gd" id="5_e8rh4"]
+[ext_resource type="PackedScene" uid="uid://bn53lhjx8ik0e" path="res://Esenas/Slime Verde/Slime verde.tscn" id="6_sw1di"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_sw1di"]
 texture = ExtResource("1_nen3v")
@@ -49,3 +50,7 @@ position = Vector2(171, 419)
 [node name="Camera2D" type="Camera2D" parent="player"]
 position = Vector2(0.834839, 0)
 script = ExtResource("4_nen3v")
+
+[node name="CharacterBody2D" parent="." instance=ExtResource("6_sw1di")]
+position = Vector2(1080, 188)
+scale = Vector2(5, 4.902)

@@ -1,258 +1,172 @@
-# SlimeGreen.gd
 extends CharacterBody2D
 
-# Estados
-enum State { PATROL, CHASE, ATTACK, DAMAGE, DEAD }
+# --- Parámetros ajustables ---
+@export var velocidad_movimiento: float = 80.0
+@export var fuerza_salto: float = -280.0
+@export var gravedad: float = 900.0
+@export var multiplicador_salto_x: float = 1.5
+@export var tiempo_min_cambio_dir: float = 2.0
+@export var tiempo_max_cambio_dir: float = 10.0
+@export var pausa_cambio_dir: float = 0.15
+@export var tiempo_cooldown_salto: float = 0.8
+@export var tiempo_min_suelo_para_salto: float = 0.2
+@export var daño: int = 5                        # 🔑 daño que hace el slime
+@export var tiempo_cooldown_ataque: float = 1.0  # 🔑 tiempo entre ataques
 
-# --- Exported (tuneable en el Inspector)
-@export var max_health: int = 40
-@export var patrol_left: Vector2 = Vector2(-100, 0)   # offset relativo desde la posición de inicio
-@export var patrol_right: Vector2 = Vector2(100, 0)   # offset relativo desde la posición de inicio
-@export var patrol_speed: float = 60.0
-@export var chase_speed: float = 120.0
-@export var gravity: float = 1400.0
-@export var floor_normal: Vector2 = Vector2.UP
+# --- Nodos ---
+@onready var anim: AnimatedSprite2D = $AnimatedSprite2D
+@onready var temporizador_salto: Timer = $Timer
+@onready var temporizador_dir: Timer = Timer.new()
+@onready var detector_jugador: Area2D = $"Detector del jugador"
+@onready var area_ataque: Area2D = $Ataque
+@onready var temporizador_ataque: Timer = Timer.new()
 
-@export var detection_radius: float = 200.0
-@export var attack_damage: int = 20
-@export var attack_cooldown: float = 0.6
-@export var dead_cleanup_time: float = 5.0
-
-# NodePaths (configura en el Inspector o deja en blanco para resolución automática)
-@export var sprite_node_path: NodePath = NodePath("AnimatedSprite2D")
-@export var hitbox_area_path: NodePath = NodePath("Hitbox")
-@export var ray_ground_path: NodePath = NodePath("RayCast2D")
-@export var player_path: NodePath = NodePath("")
-
-# --- Internals
-var health: int = 0
-var state: State = State.PATROL
-var velocity: Vector2 = Vector2.ZERO
-var facing: int = 1   # 1 = derecha, -1 = izquierda
-
-var patrol_target_a: Vector2
-var patrol_target_b: Vector2
-var current_patrol_target: Vector2
-
-var last_attack_time: float = -9999.0
-
-# nodos resueltos en _ready
-onready var sprite: AnimatedSprite2D = null
-onready var hitbox_area: Area2D = null
-onready var ray_ground: RayCast2D = null
-onready var player: Node = null
-
-# señales
-signal died
-signal damaged(amount)
+# --- Estado ---
+var direccion: int = 1
+var rng := RandomNumberGenerator.new()
+var preparando_salto: bool = false
+var pausando_por_cambio: bool = false
+var tiempo_desde_ultimo_salto: float = 999.0
+var tiempo_en_suelo: float = 0.0
+var bloqueo_salto_pared: bool = false
+var jugador: Node = null
+var persiguiendo: bool = false
+var jugador_en_rango: Node = null
 
 func _ready() -> void:
-	# resolver nodos por NodePath o por nombres comunes
-	if sprite_node_path != NodePath(""):
-		sprite = get_node_or_null(sprite_node_path) as AnimatedSprite2D
-	if not sprite and has_node("AnimatedSprite2D"):
-		sprite = $AnimatedSprite2D as AnimatedSprite2D
+	rng.randomize()
 
-	if hitbox_area_path != NodePath(""):
-		hitbox_area = get_node_or_null(hitbox_area_path) as Area2D
-	if not hitbox_area and has_node("Hitbox"):
-		hitbox_area = $Hitbox as Area2D
+	add_child(temporizador_dir)
+	temporizador_dir.one_shot = true
+	temporizador_dir.timeout.connect(_on_temporizador_dir_timeout)
+	temporizador_salto.timeout.connect(_on_temporizador_salto_timeout)
 
-	if ray_ground_path != NodePath(""):
-		ray_ground = get_node_or_null(ray_ground_path) as RayCast2D
-	if not ray_ground and has_node("RayCast2D"):
-		ray_ground = $RayCast2D as RayCast2D
+	# 🔑 Conectar señales del detector de jugador
+	detector_jugador.body_entered.connect(_on_detector_entered)
+	detector_jugador.body_exited.connect(_on_detector_exited)
 
-	if player_path != NodePath(""):
-		player = get_node_or_null(player_path)
-	if not player:
-		var players = get_tree().get_nodes_in_group("Player")
-		if players.size() > 0:
-			player = players[0]
+	# 🔑 Conectar señales del área de ataque
+	area_ataque.body_entered.connect(_on_ataque_entered)
+	area_ataque.body_exited.connect(_on_ataque_exited)
 
-	# validar Sprite y animaciones
-	health = max_health
-	patrol_target_a = global_position + patrol_left
-	patrol_target_b = global_position + patrol_right
-	current_patrol_target = patrol_target_b
+	# 🔑 Configurar temporizador de ataque
+	add_child(temporizador_ataque)
+	temporizador_ataque.one_shot = true
+	temporizador_ataque.timeout.connect(_on_temporizador_ataque_timeout)
 
-	if sprite:
-		# comprobar animaciones en SpriteFrames (AnimatedSprite2D.frames)
-		var frames := sprite.frames
-		if frames:
-			var required = ["run", "attack", "damage", "dead"]
-			for a in required:
-				if not frames.has_animation(a):
-					push_warning("SlimeGreen: falta animación '%s' en SpriteFrames" % a)
-			if frames.has_animation("run"):
-				sprite.play("run")
-			else:
-				var names = frames.get_animation_names()
-				if names.size() > 0:
-					sprite.play(names[0])
-		else:
-			push_warning("SlimeGreen: AnimatedSprite2D.frames es null")
-	else:
-		push_warning("SlimeGreen: AnimatedSprite2D no encontrado en la escena")
-
-	# conectar hitbox
-	if hitbox_area:
-		if not hitbox_area.is_connected("body_entered", Callable(self, "_on_hitbox_body_entered")):
-			hitbox_area.connect("body_entered", Callable(self, "_on_hitbox_body_entered"))
-
-	set_physics_process(true)
+	_programar_siguiente_salto()
+	_programar_siguiente_cambio_dir()
+	anim.play("idle")
 
 func _physics_process(delta: float) -> void:
-	if state == State.DEAD:
-		return
-
-	_apply_gravity(delta)
-	_update_state_and_movement(delta)
-	_update_animation()
-
-	# aplicar movimiento (CharacterBody2D.velocity se usa internamente)
-	velocity = move_and_slide(velocity, floor_normal)
-
-func _apply_gravity(delta: float) -> void:
-	# si no está en el suelo, aplicar gravedad
+	# Gravedad
 	if not is_on_floor():
-		velocity.y += gravity * delta
+		velocity.y += gravedad * delta
+
+	# Contadores
+	tiempo_desde_ultimo_salto += delta
+	if is_on_floor():
+		tiempo_en_suelo += delta
+		bloqueo_salto_pared = false
 	else:
-		# reset suave de componente vertical cuando está en suelo
-		if velocity.y > 0:
-			velocity.y = 0
+		tiempo_en_suelo = 0.0
 
-func _update_state_and_movement(delta: float) -> void:
-	# comprobar muerte
-	if health <= 0:
-		_enter_dead()
-		return
-
-	# obtener posición del jugador si existe
-	var player_pos: Vector2 = null
-	if player and player.has_method("global_position"):
-		player_pos = player.global_position
-
-	var dist_to_player := 1e9
-	if player_pos:
-		dist_to_player = global_position.distance_to(player_pos)
-
-	# si está en daño, esperar recuperación
-	if state == State.DAMAGE:
-		return
-
-	# detección y persecución
-	if player_pos and dist_to_player <= detection_radius:
-		state = State.CHASE
-		_chase_player(player_pos, delta)
-	else:
-		if state != State.PATROL:
-			state = State.PATROL
-		_patrol(delta)
-
-func _patrol(delta: float) -> void:
-	var target := current_patrol_target
-	var dir := (target - global_position)
-	if dir.length() < 6.0:
-		# invertir destino
-		current_patrol_target = (patrol_target_a if current_patrol_target == patrol_target_b else patrol_target_b)
-		dir = (current_patrol_target - global_position)
-	if dir.length() > 0:
-		dir = dir.normalized()
-		velocity.x = dir.x * patrol_speed
-		facing = int(sign(velocity.x)) if velocity.x != 0 else facing
-	else:
+	# Movimiento
+	if preparando_salto or pausando_por_cambio:
 		velocity.x = 0
-
-func _chase_player(player_pos: Vector2, delta: float) -> void:
-	var dir := (player_pos - global_position)
-	if dir.length() > 0:
-		dir = dir.normalized()
-		velocity.x = dir.x * chase_speed
-		facing = int(sign(velocity.x)) if velocity.x != 0 else facing
+		anim.play("idle")
 	else:
-		velocity.x = 0
+		if persiguiendo and jugador:
+			direccion = sign(jugador.global_position.x - global_position.x)
+		if is_on_floor():
+			velocity.x = direccion * velocidad_movimiento
+			anim.play("walk")
+		else:
+			velocity.x = direccion * velocidad_movimiento * multiplicador_salto_x
+			if velocity.y < 0.0:
+				anim.play("jump")
 
-func _update_animation() -> void:
-	if not sprite:
-		return
+	# Salto por pared
+	if is_on_wall() and is_on_floor() and not preparando_salto:
+		if _puede_saltar() and not bloqueo_salto_pared:
+			_hacer_salto()
+			bloqueo_salto_pared = true
 
-	var frames := sprite.frames
+	# Orientación visual
+	anim.flip_h = (direccion < 0)
 
+	move_and_slide()
 
-# --- Colisiones entrantes (hitbox) ---
-func _on_hitbox_body_entered(body: Node) -> void:
-	if state == State.DEAD:
-		return
-
-	# colisión con jugador: aplicar daño al jugador y cambiar a ATTACK
+# --- Señales del Detector del jugador ---
+func _on_detector_entered(body: Node) -> void:
 	if body.is_in_group("Player"):
-		if body.has_method("apply_damage"):
-			body.apply_damage(attack_damage)
-		elif "health" in body:
-			body.health = max(0, int(body.health) - attack_damage)
-		state = State.ATTACK
-		last_attack_time = Time.get_ticks_msec() / 1000.0
-		return
+		jugador = body
+		persiguiendo = true
 
-	# colisión con proyectil/arma del jugador: detectar daño
-	# se admiten: has_method("get_damage"), metadata "damage", o propiedad damage
-	if body.has_method("get_damage") or body.has_meta("damage") or "damage" in body:
-		var dmg: int = 1
-		if body.has_method("get_damage"):
-			dmg = int(body.get_damage())
-		elif body.has_meta("damage"):
-			dmg = int(body.get_meta("damage"))
-		elif "damage" in body:
-			dmg = int(body.damage)
-		_apply_damage(dmg)
-		# eliminar proyectil si procede
-		if body.has_method("queue_free"):
-			body.queue_free()
+func _on_detector_exited(body: Node) -> void:
+	if body == jugador:
+		jugador = null
+		persiguiendo = false
 
-func _apply_damage(amount: int) -> void:
-	if state == State.DEAD:
-		return
-	health -= amount
-	emit_signal("damaged", amount)
-	state = State.DAMAGE
-	_update_animation()
+# --- Señales del Área de Ataque ---
+func _on_ataque_entered(body: Node) -> void:
+	if body.is_in_group("Player"):
+		jugador_en_rango = body
+		_iniciar_ataque()
 
-	# temporizador de recuperación (stun breve)
-	var t := Timer.new()
-	t.one_shot = true
-	t.wait_time = 0.35
-	add_child(t)
-	t.start()
-	t.timeout.connect(Callable(self, "_on_damage_recovery"))
+func _on_ataque_exited(body: Node) -> void:
+	if body == jugador_en_rango:
+		jugador_en_rango = null
 
-func _on_damage_recovery() -> void:
-	if health <= 0:
-		_enter_dead()
-	else:
-		state = State.PATROL
+func _iniciar_ataque() -> void:
+	if not temporizador_ataque.is_stopped():
+		return # 🔑 evita daño masivo, espera cooldown
+	if jugador_en_rango and jugador_en_rango.has_method("recibir_daño"):
+		jugador_en_rango.recibir_daño(daño)
+		anim.play("attack")
+	temporizador_ataque.start(tiempo_cooldown_ataque)
 
-func _enter_dead() -> void:
-	if state == State.DEAD:
-		return
-	state = State.DEAD
-	emit_signal("died")
-	_update_animation()
+func _on_temporizador_ataque_timeout() -> void:
+	# Si el jugador sigue en rango, volver a atacar
+	if jugador_en_rango:
+		_iniciar_ataque()
 
-	# desactivar hitbox y colision física
-	if hitbox_area:
-		hitbox_area.monitoring = false
-		hitbox_area.set_deferred("disabled", true)
-	if has_node("CollisionShape2D"):
-		$CollisionShape2D.disabled = true
+# --- Saltos aleatorios ---
+func _on_temporizador_salto_timeout() -> void:
+	if _puede_saltar():
+		preparando_salto = true
+		velocity.x = 0
+		anim.play("idle")
 
-	# programar eliminación tras dead_cleanup_time segundos
-	var cleanup := Timer.new()
-	cleanup.one_shot = true
-	cleanup.wait_time = dead_cleanup_time
-	add_child(cleanup)
-	cleanup.start()
-	cleanup.timeout.connect(Callable(self, "_on_cleanup_timeout"))
+		await get_tree().create_timer(0.3).timeout
+		_hacer_salto()
+		preparando_salto = false
+	_programar_siguiente_salto()
 
-func _on_cleanup_timeout() -> void:
-	queue_free()
+func _hacer_salto() -> void:
+	if is_on_floor():
+		velocity.y = fuerza_salto
+		anim.play("jump")
+		tiempo_desde_ultimo_salto = 0.0
+
+func _puede_saltar() -> bool:
+	return is_on_floor() and tiempo_desde_ultimo_salto >= tiempo_cooldown_salto and tiempo_en_suelo >= tiempo_min_suelo_para_salto
+
+func _programar_siguiente_salto() -> void:
+	var espera := rng.randf_range(3.0, 10.0)
+	temporizador_salto.wait_time = espera
+	temporizador_salto.start()
+
+# --- Cambio de dirección natural ---
+func _on_temporizador_dir_timeout() -> void:
+	if is_on_floor() and not preparando_salto and not persiguiendo:
+		direccion *= -1
+		pausando_por_cambio = true
+		await get_tree().create_timer(pausa_cambio_dir).timeout
+		pausando_por_cambio = false
+	_programar_siguiente_cambio_dir()
+
+func _programar_siguiente_cambio_dir() -> void:
+	var espera := rng.randf_range(tiempo_min_cambio_dir, tiempo_max_cambio_dir)
+	temporizador_dir.wait_time = espera
+	temporizador_dir.start()

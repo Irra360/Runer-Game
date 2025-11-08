@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://bwj0rcq4oiod7"]
+[gd_scene load_steps=19 format=3 uid="uid://bwj0rcq4oiod7"]
 
 [ext_resource type="Script" uid="uid://bsunufwuqmm1r" path="res://Esenas/Jugador/Jugador.gd" id="1_0leuf"]
 [ext_resource type="Texture2D" uid="uid://cgfvvg1ejgpi7" path="res://Personajes/Attack/Personaje_attack_1.png" id="2_mnoke"]
@@ -12,7 +12,9 @@
 [ext_resource type="Texture2D" uid="uid://cr3y73opn1wdp" path="res://Personajes/Idle/Idle Interactions/Personaje_idle_3.png" id="10_ggq12"]
 [ext_resource type="Texture2D" uid="uid://teeu0qt1alu1" path="res://Personajes/Run/Personaje_run3.png" id="11_a5dpi"]
 [ext_resource type="Texture2D" uid="uid://c4s0pdyjw17u6" path="res://Personajes/Run/Personaje_run2.png" id="12_1kwch"]
+[ext_resource type="Texture2D" uid="uid://c54byoqok2fwo" path="res://Personajes/Dead/personaje_dead_2.png" id="13_203in"]
 [ext_resource type="Texture2D" uid="uid://se63fewe3xtx" path="res://Personajes/Run/Personaje_run_1.png" id="13_f62eg"]
+[ext_resource type="Texture2D" uid="uid://cravh1p6uw6xe" path="res://Personajes/Dead/personaje_dead_3.png" id="14_dyk63"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_t7uhg"]
 radius = 15.0
@@ -90,6 +92,17 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": ExtResource("13_203in")
+}, {
+"duration": 10.0,
+"texture": ExtResource("14_dyk63")
+}],
+"loop": true,
+"name": &"muerto",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": ExtResource("12_1kwch")
 }, {
 "duration": 1.0,
@@ -117,7 +130,11 @@ animations = [{
 "speed": 6.0
 }]
 
-[node name="player" type="CharacterBody2D"]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0leuf"]
+radius = 19.6186
+height = 67.0126
+
+[node name="player" type="CharacterBody2D" groups=["Player"]]
 scale = Vector2(2.39568, 2.20854)
 script = ExtResource("1_0leuf")
 
@@ -130,15 +147,18 @@ one_way_collision_margin = 0.0
 position = Vector2(-1.90735e-06, 0.5)
 scale = Vector2(1.03125, 1.01563)
 sprite_frames = SubResource("SpriteFrames_avfl4")
-animation = &"idle"
-
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-layer = 4
+animation = &"idleinter"
 
 [node name="Area2D" type="Area2D" parent="."]
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Area2D"]
-position = Vector2(-1, 0)
-shape = SubResource("CapsuleShape2D_t7uhg")
-one_way_collision_margin = 0.0
-metadata/_edit_group_ = true
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(-1.66967, 0)
+shape = SubResource("CapsuleShape2D_0leuf")
+
+[node name="VidaLabel" type="Label" parent="."]
+offset_left = -45.0
+offset_top = -50.0
+offset_right = -16.0
+offset_bottom = -27.0
+
+[node name="Timer" type="Timer" parent="."]

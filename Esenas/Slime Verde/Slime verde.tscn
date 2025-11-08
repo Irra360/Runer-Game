@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bn53lhjx8ik0e"]
+[gd_scene load_steps=15 format=3 uid="uid://bn53lhjx8ik0e"]
 
 [ext_resource type="Script" uid="uid://lfh0vef46in0" path="res://Esenas/Slime Verde/Slime verde.gd" id="1_87ru1"]
 [ext_resource type="Texture2D" uid="uid://dmibppon07fj3" path="res://Enemigos/Slime Ver/Attack/2Slime_Verde_attack_2.png" id="2_mb645"]
@@ -56,8 +56,15 @@ animations = [{
 "speed": 3.0
 }]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_dihjw"]
-radius = 23.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_ib3lk"]
+radius = 12.0416
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_s0fqc"]
+radius = 14.0357
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ib3lk"]
+radius = 42.0
+height = 228.0
 
 [node name="CharacterBody2D" type="CharacterBody2D"]
 script = ExtResource("1_87ru1")
@@ -65,12 +72,24 @@ script = ExtResource("1_87ru1")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_uhxq0")
 animation = &"attack"
-frame_progress = 0.796264
-
-[node name="Area2D" type="Area2D" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
-shape = SubResource("CircleShape2D_dihjw")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_dihjw")
+position = Vector2(1, 2)
+shape = SubResource("CircleShape2D_ib3lk")
+
+[node name="Ataque" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ataque"]
+position = Vector2(1, 2)
+shape = SubResource("CircleShape2D_s0fqc")
+
+[node name="Detector del jugador" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Detector del jugador"]
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_ib3lk")
+
+[node name="Timer" type="Timer" parent="."]
+
+[connection signal="body_entered" from="Detector del jugador" to="." method="_on_detector_entered"]
+[connection signal="body_exited" from="Detector del jugador" to="." method="_on_detector_exited"]
