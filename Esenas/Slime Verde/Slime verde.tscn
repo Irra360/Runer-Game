@@ -63,15 +63,15 @@ radius = 12.0416
 radius = 14.0357
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ib3lk"]
-radius = 42.0
-height = 228.0
+radius = 64.0
+height = 692.0
 
-[node name="CharacterBody2D" type="CharacterBody2D"]
+[node name="Slime_Verde" type="CharacterBody2D"]
 script = ExtResource("1_87ru1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_uhxq0")
-animation = &"attack"
+animation = &"run"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(1, 2)

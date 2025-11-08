@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3 uid="uid://o1ug3xl0xyfr"]
+
+[ext_resource type="Script" uid="uid://dychlca4txlhq" path="res://game_over.gd" id="1_mdedw"]
+[ext_resource type="Texture2D" uid="uid://mn3ne5djyrwv" path="res://Menus/Menus/GAME OVER/GAME OVER.png" id="2_kvrqm"]
+[ext_resource type="Texture2D" uid="uid://c63owfqjcxnvu" path="res://Menus/Menus/GAME OVER/volver.png" id="3_ek82b"]
+[ext_resource type="Texture2D" uid="uid://dy0d3jug8lkl3" path="res://Menus/Menus/GAME OVER/salir.png" id="4_oa3b1"]
+
+[node name="GAME OVER" type="CanvasLayer"]
+scale = Vector2(0.64, 0.64)
+transform = Transform2D(0.64, 0, 0, 0.64, 0, 0)
+script = ExtResource("1_mdedw")
+
+[node name="GameOver" type="Sprite2D" parent="."]
+position = Vector2(926.063, 505.75)
+texture = ExtResource("2_kvrqm")
+
+[node name="volver" type="TextureButton" parent="."]
+offset_left = 536.063
+offset_top = 597.75
+offset_right = 1311.06
+offset_bottom = 716.75
+texture_normal = ExtResource("3_ek82b")
+
+[node name="salir" type="TextureButton" parent="."]
+offset_left = 536.063
+offset_top = 755.75
+offset_right = 1311.06
+offset_bottom = 877.75
+texture_normal = ExtResource("4_oa3b1")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(926.063, 504.75)
+zoom = Vector2(1.128, 0.633)
+
+[connection signal="pressed" from="volver" to="." method="_on_volver_pressed"]
+[connection signal="pressed" from="salir" to="." method="_on_salir_pressed"]

@@ -53,4 +53,4 @@ script = ExtResource("4_nen3v")
 
 [node name="CharacterBody2D" parent="." instance=ExtResource("6_sw1di")]
 position = Vector2(1080, 188)
-scale = Vector2(5, 4.902)
+scale = Vector2(1.83536, 2.28766)

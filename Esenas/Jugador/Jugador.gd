@@ -30,7 +30,6 @@ var esta_muerto: bool = false
 func _ready() -> void:
 	add_to_group("Player")
 	_actualizar_label()
-	# Conectar fin de animación para controlar transiciones sin await
 	anim.animation_finished.connect(_on_anim_finished)
 
 func _physics_process(delta: float) -> void:
@@ -105,22 +104,16 @@ func actualizar_animaciones(delta: float) -> void:
 	tiempo_idle += delta
 	if not reproduciendo_idleinter and tiempo_idle >= 8.0 and anim.sprite_frames.has_animation("idleinter"):
 		reproduciendo_idleinter = true
-		_set_anim_force("idleinter") # reproducir una vez, no ser interrumpida
+		_set_anim_force("idleinter")
 	else:
-		# Reproduce idle sólo si no estamos en la intermedia
 		if not reproduciendo_idleinter:
 			_set_anim_safe("idle")
 
 func _on_anim_finished() -> void:
-	# Al terminar "idleinter", volver a idle
 	if reproduciendo_idleinter:
 		reproduciendo_idleinter = false
 		tiempo_idle = 0.0
 		_set_anim_safe("idle")
-
-	# Al terminar "muerto", puedes eliminar o dejar al personaje
-	if esta_muerto:
-		queue_free()
 
 # --- Sistema de vida ---
 func recibir_daño(cantidad: int) -> void:
@@ -141,22 +134,23 @@ func morir() -> void:
 	esta_muerto = true
 	velocity = Vector2.ZERO
 	empezo_correr = false
-	# Reproducir "muerto" y esperar al signal
+
+	# 🔑 reproducir animación "muerto"
 	if anim.sprite_frames.has_animation("muerto"):
 		_set_anim_force("muerto")
-	else:
-		queue_free() # fallback si no existe
+
+	# 🔑 esperar 3 segundos y luego ir a la escena Game Over
+	await get_tree().create_timer(3.0).timeout
+	get_tree().change_scene_to_file("res://Esenas/GAME OVER/game_over.tscn")
 
 func _actualizar_label() -> void:
 	vida_label.text = "Vida: %d" % vida_actual
 
 # --- Utilidades de animación ---
 func _set_anim_safe(nombre: String) -> void:
-	# Solo cambia si es distinta para evitar spam y cortes
 	if anim.animation != nombre and anim.sprite_frames.has_animation(nombre):
 		anim.play(nombre)
 
 func _set_anim_force(nombre: String) -> void:
-	# Fuerza el cambio si existe
 	if anim.sprite_frames.has_animation(nombre):
 		anim.play(nombre)
