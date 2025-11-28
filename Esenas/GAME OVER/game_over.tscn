@@ -6,8 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://dy0d3jug8lkl3" path="res://Menus/Menus/GAME OVER/salir.png" id="4_oa3b1"]
 
 [node name="GAME OVER" type="CanvasLayer"]
-scale = Vector2(0.64, 0.64)
-transform = Transform2D(0.64, 0, 0, 0.64, 0, 0)
+scale = Vector2(0.805, 0.64)
+transform = Transform2D(0.805, 0, 0, 0.64, 0, 0)
 script = ExtResource("1_mdedw")
 
 [node name="GameOver" type="Sprite2D" parent="."]

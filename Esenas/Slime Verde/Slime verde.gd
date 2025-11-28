@@ -13,6 +13,10 @@ extends CharacterBody2D
 @export var daño: int = 5
 @export var tiempo_cooldown_ataque: float = 1.0
 
+# --- Vida del slime ---
+@export var vida_maxima: int = 30
+var vida_actual: int = vida_maxima
+
 # --- Nodos ---
 @onready var anim: AnimatedSprite2D = $AnimatedSprite2D
 @onready var temporizador_salto: Timer = $Timer
@@ -20,6 +24,7 @@ extends CharacterBody2D
 @onready var detector_jugador: Area2D = $"Detector del jugador"
 @onready var area_ataque: Area2D = $Ataque
 @onready var temporizador_ataque: Timer = Timer.new()
+@onready var vida_label: Label = $VidaLabel   # 🔑 Label para mostrar la vida
 
 # --- Estado ---
 var direccion: int = 1
@@ -56,6 +61,8 @@ func _ready() -> void:
 	_programar_siguiente_cambio_dir()
 	anim.play("idle")
 
+	_actualizar_label()   # 🔑 inicializa el texto de vida
+
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y += gravedad * delta
@@ -91,6 +98,27 @@ func _physics_process(delta: float) -> void:
 	anim.flip_h = (direccion < 0)
 	move_and_slide()
 
+# --- Sistema de vida del slime ---
+func recibir_daño(cantidad: int) -> void:
+	vida_actual -= cantidad
+	if vida_actual < 0:
+		vida_actual = 0
+	_actualizar_label()
+
+	if vida_actual <= 0:
+		morir()
+
+func _actualizar_label() -> void:
+	if vida_label:
+		vida_label.text = "Vida Slime: %d" % vida_actual
+
+func morir() -> void:
+	# Aquí decides qué pasa al morir el slime
+	if anim.sprite_frames.has_animation("muerto"):
+		anim.play("muerto")
+	await get_tree().create_timer(1.0).timeout
+	queue_free()
+
 # --- Señales del Detector del jugador ---
 func _on_detector_entered(body: Node) -> void:
 	if body.is_in_group("Player"):
@@ -116,14 +144,12 @@ func _on_ataque_exited(body: Node) -> void:
 func _iniciar_ataque() -> void:
 	if not temporizador_ataque.is_stopped():
 		return
-	# 🔑 chequeo de vida del jugador
 	if jugador_en_rango and jugador_en_rango.has_method("recibir_daño") and jugador_en_rango.vida_actual > 0:
 		jugador_en_rango.recibir_daño(daño)
 		anim.play("attack")
 		atacando = true
 		temporizador_ataque.start(tiempo_cooldown_ataque)
 	else:
-		# si el jugador está muerto, no atacar
 		atacando = false
 		if velocity.x != 0:
 			anim.play("run")

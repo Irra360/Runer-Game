@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bff6gveu2nw7v"
-path="res://.godot/imported/Suelo_set.png-2b4ea4dca70a954619f609cdc2b65d37.ctex"
+uid="uid://r6ekh6ysf63r"
+path="res://.godot/imported/Tierra.png-edaa517b3cbeb7054e7ce9cc196663ef.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Fondos/Cesped/Suelo_set.png"
-dest_files=["res://.godot/imported/Suelo_set.png-2b4ea4dca70a954619f609cdc2b65d37.ctex"]
+source_file="res://Fondos/Suelo/Tierra.png"
+dest_files=["res://.godot/imported/Tierra.png-edaa517b3cbeb7054e7ce9cc196663ef.ctex"]
 
 [params]
 
