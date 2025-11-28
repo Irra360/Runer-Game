@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://758ns2srly8"]
+[gd_scene load_steps=12 format=3 uid="uid://758ns2srly8"]
 
 [ext_resource type="Texture2D" uid="uid://ba0nhqvtlapxn" path="res://Fondos/Suelo/Cesped.png" id="1_nen3v"]
 [ext_resource type="Script" uid="uid://h8mi6awaqawb" path="res://Esenas/Suelo.gd" id="2_e8rh4"]
@@ -6,8 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://r6ekh6ysf63r" path="res://Fondos/Suelo/Tierra.png" id="3_rlcxy"]
 [ext_resource type="Script" uid="uid://d1nbrshecivwo" path="res://Esenas/Suelo/Cam_Jugador.gd" id="4_nen3v"]
 [ext_resource type="Script" uid="uid://bpclohxqjuejt" path="res://Esenas/Suelo/fps.gd" id="5_e8rh4"]
-[ext_resource type="Texture2D" uid="uid://dvnnvc55cd17o" path="res://Fondos/Vegetacion/árboles/árbol_seco/árbol_seco_1.png" id="5_ywxv6"]
-[ext_resource type="Texture2D" uid="uid://bmd3lfh6k5ejx" path="res://Fondos/Vegetacion/árboles/árbol_seco/caido/árbol_seco_caido_1.png" id="6_8ix4m"]
 [ext_resource type="PackedScene" uid="uid://bn53lhjx8ik0e" path="res://Esenas/Slime Verde/Slime verde.tscn" id="6_sw1di"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_sw1di"]
@@ -64,16 +62,6 @@ collision_offset = Vector2(0, 7.5)
 
 [node name="Colision_mapa" type="StaticBody2D" parent="Mapa/TileMap"]
 physics_material_override = SubResource("PhysicsMaterial_nen3v")
-
-[node name="ÁrbolSeco1" type="Sprite2D" parent="Mapa"]
-position = Vector2(604, 494)
-scale = Vector2(9, 9)
-texture = ExtResource("5_ywxv6")
-
-[node name="ÁrbolSecoCaido1" type="Sprite2D" parent="Mapa"]
-position = Vector2(1220, 548)
-scale = Vector2(11, 11)
-texture = ExtResource("6_8ix4m")
 
 [node name="player" parent="." instance=ExtResource("2_tii18")]
 position = Vector2(171, 419)
