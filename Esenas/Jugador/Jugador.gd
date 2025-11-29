@@ -10,36 +10,31 @@ var velocidad_actual: float = 0.0
 @export var gravedad: float = 1200.0
 
 # --- Vida del jugador ---
-@export var vida_maxima: int = 20
+@export var vida_maxima: int = 100
 var vida_actual: int = vida_maxima
+var esta_muerto_flag: bool = false
 
 # --- Nodos ---
 @onready var anim: AnimatedSprite2D = $AnimatedSprite2D
 @onready var vida_label: Label = $VidaLabel
-@onready var area_ataque: Area2D = $Ataque   # 🔑 Area2D hijo con CollisionShape2D
+@onready var temporizador: Timer = $Timer   # Timer en la escena
 
-# --- Estado ---
+# --- Estado de inicio ---
 var empezo_correr: bool = false
-var direccion: int = 1
-var R: bool = false
-var tiempo_idle: float = 0.0
-var reproduciendo_idleinter: bool = false
-var esta_muerto: bool = false
-var atacando: bool = false
+var direccion: int = 1   # 1 = derecha, -1 = izquierda
+var R: bool = false      # false = aún no se presionó dirección, true = ya se presionó una vez
 
 func _ready() -> void:
-	add_to_group("Player")
 	_actualizar_label()
-	anim.animation_finished.connect(_on_anim_finished)
-	if area_ataque:
-		area_ataque.monitoring = false
-		area_ataque.body_entered.connect(_on_ataque_body_entered)
+	temporizador.one_shot = true
+	temporizador.timeout.connect(_on_temporizador_timeout)
 
 func _physics_process(delta: float) -> void:
-	if esta_muerto:
+	if esta_muerto_flag:
+		velocity = Vector2.ZERO
 		return
 
-	# --- Movimiento básico ---
+	# --- 1. Procesar entrada ---
 	if Input.is_action_just_pressed("ui_right") or Input.is_key_pressed(KEY_D):
 		manejar_pulsacion(1)
 	elif Input.is_action_just_pressed("ui_left") or Input.is_key_pressed(KEY_A):
@@ -57,76 +52,56 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y += gravedad * delta
 
+	# --- 2. Asignar velocidad horizontal ---
 	if empezo_correr:
 		velocity.x = velocidad_actual * direccion
 	else:
 		velocity.x = 0
 
+	# --- 3. Mover al jugador ---
 	move_and_slide()
-	actualizar_animaciones(delta)
 
-	# --- Control con mouse ---
-	if Input.is_action_just_pressed("mouse_left"):
-		orientar_idle_mouse()
-	if Input.is_action_just_pressed("mouse_right"):
-		realizar_ataque()
+	# --- 4. Animaciones ---
+	actualizar_animaciones()
 
+# --- Manejo de pulsaciones ---
 func manejar_pulsacion(dir: int) -> void:
-	if esta_muerto:
-		return
-	direccion = dir
-	if not R:
-		R = true
+	if dir != direccion:
+		# Cambió de dirección → reinicia carrera
+		direccion = dir
+		R = false
 		empezo_correr = true
 		velocidad_actual = velocidad_inicial
 	else:
-		empezo_correr = true
-		velocidad_actual = velocidad_maxima
+		if not R:
+			# Primera pulsación en esta dirección
+			R = true
+			empezo_correr = true
+			velocidad_actual = velocidad_inicial
+		else:
+			# Segunda pulsación → correr
+			empezo_correr = true
+			velocidad_actual = velocidad_maxima
 
-func actualizar_animaciones(delta: float) -> void:
-	if esta_muerto or atacando:
-		return
-
+# --- Animaciones ---
+func actualizar_animaciones() -> void:
 	if not is_on_floor():
-		_set_anim_safe("jump")
-		if velocity.x != 0:
-			anim.flip_h = velocity.x < 0
-		tiempo_idle = 0.0
-		reproduciendo_idleinter = false
+		anim.play("jump")
 		return
 
 	if velocity.x != 0:
 		if velocidad_actual >= velocidad_maxima:
-			_set_anim_safe("runrun")
+			anim.play("runrun")
 		else:
-			_set_anim_safe("run")
-		anim.flip_h = (direccion == -1)
-		tiempo_idle = 0.0
-		reproduciendo_idleinter = false
+			anim.play("run")
+		anim.flip_h = direccion == -1
 		return
 
-	tiempo_idle += delta
-	if not reproduciendo_idleinter and tiempo_idle >= 8.0 and anim.sprite_frames.has_animation("idleinter"):
-		reproduciendo_idleinter = true
-		_set_anim_force("idleinter")
-	else:
-		if not reproduciendo_idleinter:
-			_set_anim_safe("idle")
-
-func _on_anim_finished() -> void:
-	if reproduciendo_idleinter:
-		reproduciendo_idleinter = false
-		tiempo_idle = 0.0
-		_set_anim_safe("idle")
-	if atacando:
-		atacando = false
-		if area_ataque:
-			area_ataque.monitoring = false
-		_set_anim_safe("idle")
+	anim.play("idle")
 
 # --- Sistema de vida ---
 func recibir_daño(cantidad: int) -> void:
-	if esta_muerto:
+	if esta_muerto_flag:
 		return
 	vida_actual -= cantidad
 	if vida_actual < 0:
@@ -135,55 +110,25 @@ func recibir_daño(cantidad: int) -> void:
 
 	if vida_actual <= 0:
 		morir()
-	else:
-		if anim.sprite_frames.has_animation("hit") and not reproduciendo_idleinter:
-			_set_anim_force("hit")
-
-func morir() -> void:
-	esta_muerto = true
-	velocity = Vector2.ZERO
-	empezo_correr = false
-	if anim.sprite_frames.has_animation("muerto"):
-		_set_anim_force("muerto")
-	await get_tree().create_timer(3.0).timeout
-	get_tree().change_scene_to_file("res://Escenas/GAME OVER/game_over.tscn") # 🔑 revisa que la ruta sea correcta
 
 func _actualizar_label() -> void:
 	if vida_label:
 		vida_label.text = "Vida: %d" % vida_actual
 
-# --- Mouse control ---
-func orientar_idle_mouse() -> void:
-	# Clic izquierdo → idle mirando hacia el mouse
-	empezo_correr = false
-	velocity.x = 0
-	var mouse_pos = get_global_mouse_position()
-	direccion = sign(mouse_pos.x - global_position.x)
-	anim.flip_h = (direccion < 0)
-	_set_anim_force("idle")
+func morir() -> void:
+	esta_muerto_flag = true
+	velocity = Vector2.ZERO
+	if anim.sprite_frames.has_animation("muerto"):
+		anim.play("muerto")
+	temporizador.start(2.0)  # espera 2 segundos antes de cambiar de escena
 
-func realizar_ataque() -> void:
-	atacando = true
-	var mouse_pos = get_global_mouse_position()
-	direccion = sign(mouse_pos.x - global_position.x)
-	anim.flip_h = (direccion < 0)
+# --- Estado para el slime ---
+func esta_vivo() -> bool:
+	return not esta_muerto_flag
 
-	# Animación de ataque
-	_set_anim_force("attack")
+func esta_muerto() -> bool:
+	return esta_muerto_flag
 
-	# Activar área de ataque
-	if area_ataque:
-		area_ataque.monitoring = true
-
-func _on_ataque_body_entered(body: Node) -> void:
-	if body.is_in_group("Enemy") and body.has_method("recibir_daño"):
-		body.recibir_daño(10)
-
-# --- Utilidades de animación ---
-func _set_anim_safe(nombre: String) -> void:
-	if anim.sprite_frames and anim.sprite_frames.has_animation(nombre) and anim.animation != nombre:
-		anim.play(nombre)
-
-func _set_anim_force(nombre: String) -> void:
-	if anim.sprite_frames and anim.sprite_frames.has_animation(nombre):
-		anim.play(nombre)
+# --- Timer ---
+func _on_temporizador_timeout() -> void:
+	get_tree().change_scene_to_file("res://Esenas/GAME OVER/game_over.tscn")

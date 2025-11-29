@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://o1ug3xl0xyfr"]
 
-[ext_resource type="Script" uid="uid://dychlca4txlhq" path="res://game_over.gd" id="1_mdedw"]
+[ext_resource type="Script" uid="uid://dychlca4txlhq" path="res://Esenas/GAME OVER/game_over.gd" id="1_mdedw"]
 [ext_resource type="Texture2D" uid="uid://mn3ne5djyrwv" path="res://Menus/Menus/GAME OVER/GAME OVER.png" id="2_kvrqm"]
 [ext_resource type="Texture2D" uid="uid://c63owfqjcxnvu" path="res://Menus/Menus/GAME OVER/volver.png" id="3_ek82b"]
 [ext_resource type="Texture2D" uid="uid://dy0d3jug8lkl3" path="res://Menus/Menus/GAME OVER/salir.png" id="4_oa3b1"]

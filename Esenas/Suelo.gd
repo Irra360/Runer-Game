@@ -1,104 +1,113 @@
 extends TileMap
 
 # --- Dimensiones del mapa ---
-@export var width: int = 100
-@export var height: int = 60
+@export var ancho: int = 100
+@export var alto: int = 60
 
 # --- ID del tileset (source_id) ---
-@export var ground_tile_id: int = 1   # 🔑 fijo en 1
+@export var id_fuente_tileset: int = 1  # ID de la fuente del atlas en el TileSet
 
-# --- Coordenadas del atlas para la fila superior ---
-const TOP_A_LEFT: Vector2i = Vector2i(0, 1)
-const TOP_A_RIGHT: Vector2i = Vector2i(1, 1)
-const TOP_B_LEFT: Vector2i = Vector2i(2, 1)
-const TOP_B_RIGHT: Vector2i = Vector2i(3, 1)
-const TOP_C_OPTS: Array[Vector2i] = [Vector2i(1, 1), Vector2i(2, 1)]
+# --- Control de altura y ruido ---
+@export var altura_base: int = 20          # fila base donde se coloca la capa superior
+@export var usar_ruido: bool = true         # si true, varía altura por columna con ruido
+@export var escala_ruido: float = 0.05      # frecuencia del ruido
+@export var fuerza_ruido: int = 3           # variación máxima de altura (tiles)
+var ruido := FastNoiseLite.new()
 
-# --- Coordenadas del atlas para la fila inferior (solo un nivel) ---
-const BOT_A_LEFT: Vector2i = Vector2i(0, 2)
-const BOT_A_RIGHT: Vector2i = Vector2i(1, 2)
-const BOT_B_LEFT: Vector2i = Vector2i(2, 2)
-const BOT_B_RIGHT: Vector2i = Vector2i(3, 2)
-const BOT_C_OPTS: Array[Vector2i] = [Vector2i(1, 2), Vector2i(2, 2)]
-
-# --- Altura base de superficie ---
-@export var surface_y: int = 20
+# --- Capas inferiores configurables ---
+@export var capas_inferiores: int = 6       # número de capas para (0,2)(1,2)(2,2)
 
 # --- Nodo contenedor de colisiones ---
 @onready var colision_mapa: Node = $Colision_mapa
-@export var collision_offset: Vector2 = Vector2(0, 0)
+@export var desplazamiento_colision: Vector2 = Vector2(0, 0)
+
+# --- Coordenadas del atlas ---
+const SUPERIOR_OPCIONES: Array[Vector2i] = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0)]
+const MEDIO_MAPEO := {
+	Vector2i(0, 0): Vector2i(0, 1),
+	Vector2i(1, 0): Vector2i(1, 1),
+	Vector2i(2, 0): Vector2i(2, 1)
+}
+const INFERIOR_OPCIONES: Array[Vector2i] = [Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2)]
 
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	rng.randomize()
-	generate_map()
-	generate_collisions()
+	_configurar_ruido()
+	generar_mapa()
+	generar_colisiones()
+
+func _configurar_ruido() -> void:
+	ruido.seed = randi()
+	ruido.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	ruido.frequency = escala_ruido
 
 # --------------------------------
-# Generación del mapa (fila superior + un nivel inferior)
+# Generación del mapa
 # --------------------------------
-func generate_map() -> void:
+func generar_mapa() -> void:
 	clear()
-	var layer := 0
+	var capa := 0
 
-	# Grupo A al inicio
-	set_cell(layer, Vector2i(0, surface_y), ground_tile_id, TOP_A_LEFT)
-	set_cell(layer, Vector2i(1, surface_y), ground_tile_id, TOP_A_RIGHT)
+	for x in range(ancho):
+		# Altura de superficie por columna
+		var y_superficie := altura_base
+		if usar_ruido:
+			var n := ruido.get_noise_1d(float(x))
+			y_superficie = altura_base + int(round(n * float(fuerza_ruido)))
+			y_superficie = clamp(y_superficie, 0, alto - 1)
 
-	# Grupo B al final
-	set_cell(layer, Vector2i(width - 2, surface_y), ground_tile_id, TOP_B_LEFT)
-	set_cell(layer, Vector2i(width - 1, surface_y), ground_tile_id, TOP_B_RIGHT)
+		# Evitar escribir fuera del alto del mapa
+		if y_superficie >= alto:
+			continue
 
-	# Grupo C entre A y B
-	for x in range(2, width - 2):
-		var coord_top := TOP_C_OPTS[rng.randi() % TOP_C_OPTS.size()]
-		set_cell(layer, Vector2i(x, surface_y), ground_tile_id, coord_top)
+		# --- Capa superior: una sola fila, aleatoria entre (0,0)(1,0)(2,0) ---
+		var coord_sup := SUPERIOR_OPCIONES[rng.randi() % SUPERIOR_OPCIONES.size()]
+		set_cell(capa, Vector2i(x, y_superficie), id_fuente_tileset, coord_sup)
 
-	# --- Generar un nivel inferior bajo cada tile superior ---
-	for x in range(width):
-		var top_coord := get_cell_atlas_coords(layer, Vector2i(x, surface_y))
-		var bot_coord: Vector2i
+		# --- Capas medias: siempre 2 filas debajo, mapa directo (0,1)(1,1)(2,1) ---
+		var coord_medio: Vector2i = MEDIO_MAPEO.get(coord_sup, Vector2i(1, 1))
+		var y_medio_1 := y_superficie + 1
+		var y_medio_2 := y_superficie + 2
+		if y_medio_1 < alto:
+			set_cell(capa, Vector2i(x, y_medio_1), id_fuente_tileset, coord_medio)
+		if y_medio_2 < alto:
+			set_cell(capa, Vector2i(x, y_medio_2), id_fuente_tileset, coord_medio)
 
-		if top_coord == TOP_A_LEFT:
-			bot_coord = BOT_A_LEFT
-		elif top_coord == TOP_A_RIGHT:
-			bot_coord = BOT_A_RIGHT
-		elif top_coord == TOP_B_LEFT:
-			bot_coord = BOT_B_LEFT
-		elif top_coord == TOP_B_RIGHT:
-			bot_coord = BOT_B_RIGHT
-		else:
-			# Grupo C abajo aleatorio
-			bot_coord = BOT_C_OPTS[rng.randi() % BOT_C_OPTS.size()]
-
-		set_cell(layer, Vector2i(x, surface_y + 1), ground_tile_id, bot_coord)
+		# --- Capas inferiores: N filas aleatorias entre (0,2)(1,2)(2,2) ---
+		for d in range(capas_inferiores):
+			var y_inf := y_superficie + 3 + d
+			if y_inf >= alto:
+				break
+			var coord_inf := INFERIOR_OPCIONES[rng.randi() % INFERIOR_OPCIONES.size()]
+			set_cell(capa, Vector2i(x, y_inf), id_fuente_tileset, coord_inf)
 
 # --------------------------------
-# Colisiones en la fila superior
+# Colisiones en la capa superior
 # --------------------------------
-func generate_collisions() -> void:
-	# Limpia colisiones anteriores
+func generar_colisiones() -> void:
+	# Limpiar colisiones anteriores
 	for child in colision_mapa.get_children():
 		child.queue_free()
 
-	var cell_size: Vector2 = tile_set.tile_size
+	var tam_celda: Vector2 = tile_set.tile_size
 
-	for cell in get_used_cells(0):
-		if cell.y != surface_y:
+	# Recorre todas las celdas usadas en la capa 0
+	for celda in get_used_cells(0):
+		# Colisión solo en la fila superior (la más alta que colocamos en cada columna)
+		# Detectamos si es una coordenada de la capa superior del atlas.
+		var source_id := get_cell_source_id(0, celda)
+		var atlas_coord := get_cell_atlas_coords(0, celda)
+
+		var es_superior := (source_id == id_fuente_tileset and atlas_coord in SUPERIOR_OPCIONES)
+		if not es_superior:
 			continue
 
-		var source_id := get_cell_source_id(0, cell)
-		var atlas_coord := get_cell_atlas_coords(0, cell)
+		var forma := RectangleShape2D.new()
+		forma.size = tam_celda
 
-		if source_id == ground_tile_id and (
-			atlas_coord == TOP_A_LEFT or atlas_coord == TOP_A_RIGHT or
-			atlas_coord == TOP_B_LEFT or atlas_coord == TOP_B_RIGHT
-		):
-			var shape := RectangleShape2D.new()
-			shape.size = cell_size
-
-			var col := CollisionShape2D.new()
-			col.shape = shape
-			col.position = map_to_local(cell) + (cell_size / 2) + collision_offset
-			colision_mapa.add_child(col)
+		var col := CollisionShape2D.new()
+		col.shape = forma
+		col.position = map_to_local(celda) + (tam_celda / 2) + desplazamiento_colision
+		colision_mapa.add_child(col)

@@ -1,26 +1,14 @@
-[gd_scene load_steps=12 format=3 uid="uid://758ns2srly8"]
+[gd_scene load_steps=10 format=3 uid="uid://758ns2srly8"]
 
-[ext_resource type="Texture2D" uid="uid://ba0nhqvtlapxn" path="res://Fondos/Suelo/Cesped.png" id="1_nen3v"]
 [ext_resource type="Script" uid="uid://h8mi6awaqawb" path="res://Esenas/Suelo.gd" id="2_e8rh4"]
+[ext_resource type="Texture2D" uid="uid://ik0snhi8keao" path="res://Fondos/Suelo/cesped_tierra.png" id="2_rlcxy"]
 [ext_resource type="PackedScene" uid="uid://bwj0rcq4oiod7" path="res://Esenas/Jugador/Jugador.tscn" id="2_tii18"]
-[ext_resource type="Texture2D" uid="uid://r6ekh6ysf63r" path="res://Fondos/Suelo/Tierra.png" id="3_rlcxy"]
 [ext_resource type="Script" uid="uid://d1nbrshecivwo" path="res://Esenas/Suelo/Cam_Jugador.gd" id="4_nen3v"]
 [ext_resource type="Script" uid="uid://bpclohxqjuejt" path="res://Esenas/Suelo/fps.gd" id="5_e8rh4"]
 [ext_resource type="PackedScene" uid="uid://bn53lhjx8ik0e" path="res://Esenas/Slime Verde/Slime verde.tscn" id="6_sw1di"]
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_sw1di"]
-texture = ExtResource("1_nen3v")
-0:1/0 = 0
-1:1/0 = 0
-2:1/0 = 0
-3:1/0 = 0
-3:2/0 = 0
-2:2/0 = 0
-1:2/0 = 0
-0:2/0 = 0
-
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ywxv6"]
-texture = ExtResource("3_rlcxy")
+texture = ExtResource("2_rlcxy")
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
@@ -32,8 +20,7 @@ texture = ExtResource("3_rlcxy")
 2:2/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_rlcxy"]
-sources/1 = SubResource("TileSetAtlasSource_sw1di")
-sources/2 = SubResource("TileSetAtlasSource_ywxv6")
+sources/1 = SubResource("TileSetAtlasSource_ywxv6")
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_nen3v"]
 
@@ -58,7 +45,7 @@ scale = Vector2(6, 6)
 tile_set = SubResource("TileSet_rlcxy")
 format = 2
 script = ExtResource("2_e8rh4")
-collision_offset = Vector2(0, 7.5)
+desplazamiento_colision = Vector2(-8, -4)
 
 [node name="Colision_mapa" type="StaticBody2D" parent="Mapa/TileMap"]
 physics_material_override = SubResource("PhysicsMaterial_nen3v")
@@ -66,6 +53,8 @@ physics_material_override = SubResource("PhysicsMaterial_nen3v")
 [node name="player" parent="." instance=ExtResource("2_tii18")]
 position = Vector2(171, 419)
 scale = Vector2(1.8, 1.8)
+velocidad_inicial = 350.0
+velocidad_maxima = 650.0
 
 [node name="Camera2D" type="Camera2D" parent="player"]
 position = Vector2(0.834839, 0)

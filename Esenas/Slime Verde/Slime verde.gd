@@ -24,7 +24,7 @@ var vida_actual: int = vida_maxima
 @onready var detector_jugador: Area2D = $"Detector del jugador"
 @onready var area_ataque: Area2D = $Ataque
 @onready var temporizador_ataque: Timer = Timer.new()
-@onready var vida_label: Label = $VidaLabel   # 🔑 Label para mostrar la vida
+@onready var vida_label: Label = $VidaLabel
 
 # --- Estado ---
 var direccion: int = 1
@@ -60,10 +60,11 @@ func _ready() -> void:
 	_programar_siguiente_salto()
 	_programar_siguiente_cambio_dir()
 	anim.play("idle")
-
-	_actualizar_label()   # 🔑 inicializa el texto de vida
+	_actualizar_label()
 
 func _physics_process(delta: float) -> void:
+	_verificar_estado_jugador()
+
 	if not is_on_floor():
 		velocity.y += gravedad * delta
 
@@ -98,6 +99,17 @@ func _physics_process(delta: float) -> void:
 	anim.flip_h = (direccion < 0)
 	move_and_slide()
 
+# --- Verificación del estado del jugador ---
+func _verificar_estado_jugador() -> void:
+	if jugador and jugador.has_method("esta_muerto") and jugador.esta_muerto():
+		jugador = null
+		jugador_en_rango = null
+		persiguiendo = false
+		atacando = false
+		# Pequeño despegue por si está montado
+		global_position.y -= 8
+		velocity.y = fuerza_salto
+
 # --- Sistema de vida del slime ---
 func recibir_daño(cantidad: int) -> void:
 	vida_actual -= cantidad
@@ -113,7 +125,6 @@ func _actualizar_label() -> void:
 		vida_label.text = "Vida Slime: %d" % vida_actual
 
 func morir() -> void:
-	# Aquí decides qué pasa al morir el slime
 	if anim.sprite_frames.has_animation("muerto"):
 		anim.play("muerto")
 	await get_tree().create_timer(1.0).timeout
@@ -144,11 +155,16 @@ func _on_ataque_exited(body: Node) -> void:
 func _iniciar_ataque() -> void:
 	if not temporizador_ataque.is_stopped():
 		return
-	if jugador_en_rango and jugador_en_rango.has_method("recibir_daño") and jugador_en_rango.vida_actual > 0:
+	if jugador_en_rango and jugador_en_rango.has_method("recibir_daño") and jugador_en_rango.has_method("esta_muerto") and not jugador_en_rango.esta_muerto():
 		jugador_en_rango.recibir_daño(daño)
 		anim.play("attack")
 		atacando = true
 		temporizador_ataque.start(tiempo_cooldown_ataque)
+
+		# --- Salto evasivo tras atacar ---
+		var direccion_salto := -1 if rng.randi_range(0, 1) == 0 else 1
+		velocity.x = direccion_salto * velocidad_movimiento * 1.5
+		velocity.y = fuerza_salto * 1.5
 	else:
 		atacando = false
 		if velocity.x != 0:
@@ -157,7 +173,7 @@ func _iniciar_ataque() -> void:
 			anim.play("idle")
 
 func _on_temporizador_ataque_timeout() -> void:
-	if jugador_en_rango and jugador_en_rango.vida_actual > 0:
+	if jugador_en_rango and jugador_en_rango.has_method("esta_muerto") and not jugador_en_rango.esta_muerto():
 		_iniciar_ataque()
 	else:
 		atacando = false

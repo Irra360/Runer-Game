@@ -54,9 +54,8 @@ text = "         Desarrollado por
 
 
                 Testers
-Israel Amador      Aleyuan 
-Yadrian                    Febles
-Yarobis                      "
+Israel Amador    Aleyuan  Febles
+   Yadrian                  Yarobis                      "
 
 [node name="Personal" type="VBoxContainer" parent="Node2D"]
 offset_left = -89.0
@@ -76,14 +75,15 @@ Israel Amador       Aleyuan Febles
 
   Programadores        Jefe de arte
   Israel Amador          Israel Amador
-     Markiel
+   Samuel Jerez
+ Yarobi Alfonzo
 
 Banda zonora            Desarrollo      
  #########               de niveles 
                                    Israel Amador
                 
       Herramientas
-         Godot 4.3
+         Godot 4.4
         Pixelorama
          Photoshop
              Copilot"
